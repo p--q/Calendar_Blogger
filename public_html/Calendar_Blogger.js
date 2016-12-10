@@ -59,9 +59,10 @@ var Calendar_Blogger = Calendar_Blogger || function() {
         var aday;
         vars.posts.forEach(function(e){
             aday = Number(re.exec(e[vars.poru].$t));
-//            dicdays[aday] = [e.link[4].href, e.link[4].title];
-            dicdays[aday] = null;
-        });
+            dicdays[aday] = dicdays[aday] || [];
+            dicdays[aday].push([e.link[4].href, e.link[4].title]);   
+            }
+        );
         var day =  new Date(vars.y, vars.m, 1).getDay();  // 1日の曜日を取得。日曜日は0、土曜日は6になる。
         var clNode = createElem("div");  // カレンダーを入れるdiv要素を作成。
         clNode.style.display = "flex";
@@ -80,6 +81,11 @@ var Calendar_Blogger = Calendar_Blogger || function() {
                 daNode.appendChild(createElem("a"));
                 daNode.firstChild.textContent = i;  // 日付を取得。
                 daNode.firstChild.href = "#";
+                dicdays[i].forEach(function(e){
+                    daNode.firstChild.title += (daNode.firstChild.title)?"\n" + e[1]:e[1];
+                });
+//                daNode.firstChild.tooltip.backgroundColor = "black";
+                
             } else {
                 daNode.textContent = i;  // 日付を取得。
             }
