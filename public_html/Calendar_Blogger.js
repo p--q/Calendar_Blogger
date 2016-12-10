@@ -55,16 +55,13 @@ var Calendar_Blogger = Calendar_Blogger || function() {
     function createCalendar() {  // URLからラベル名と現在のページ番号を得、その後総投稿数を得るためのフィードを取得する。
         
         var re = /\d\d(?=T\d\d:\d\d:\d\d\.\d\d\d.\d\d:\d\d)/i;
-        var postdays = [];  // アンカーをつける日のデータを入れる2次元配列。
+        var dicdays = {};  // アンカーをつける日のデータを入れる辞書。
         var aday;
         vars.posts.forEach(function(e){
             aday = Number(re.exec(e[vars.poru].$t));
-            postdays.push([aday, e.link[4].href, e.link[4].title]);
+//            dicdays[aday] = [e.link[4].href, e.link[4].title];
+            dicdays[aday] = null;
         });
-
-
-
-
         var day =  new Date(vars.y, vars.m, 1).getDay();  // 1日の曜日を取得。日曜日は0、土曜日は6になる。
         var clNode = createElem("div");  // カレンダーを入れるdiv要素を作成。
         clNode.style.display = "flex";
@@ -79,11 +76,13 @@ var Calendar_Blogger = Calendar_Blogger || function() {
         }
         for(var i = 1; i < vars.em+1; i++) { 
             var daNode = dNode.cloneNode(true);
-            
-            
-            daNode.appendChild(createElem("a"));
-            daNode.firstChild.textContent = i;  // 日付を取得。
-            
+            if (i in dicdays) {
+                daNode.appendChild(createElem("a"));
+                daNode.firstChild.textContent = i;  // 日付を取得。
+                daNode.firstChild.href = "#";
+            } else {
+                daNode.textContent = i;  // 日付を取得。
+            }
             clNode.appendChild(daNode);
         }
         var s = (day+vars.em) % 7;  // 7で割ったあまりを取得。
@@ -93,7 +92,10 @@ var Calendar_Blogger = Calendar_Blogger || function() {
                 clNode.appendChild(eNode);
             }        
         }
-        return clNode;
+        clNode.onmouseover = popUpTitles;
+        
+        
+        vars.elem.appendChild(clNode);
     }       
     function writeScript(url) {  // スクリプト注入。
         var ws = createElem('script');
@@ -112,7 +114,19 @@ var Calendar_Blogger = Calendar_Blogger || function() {
     function fm(m) {  // 数値を2桁の固定長にする。
         return ("0" + m).slice(-2);
     }
-
+    function popUpTitles(e) {
+        e=e||event; // IE sucks
+        var target = e.target||e.srcElement; // targetはaになる。// and sucks again // target is the element that has been clicked
+        if (target.firstChild) {
+            target.firstChild.textContent
+            
+            
+            
+            return false; // stop event from bubbling elsewhere
+        }        
+        
+        
+    }
 
 
     
