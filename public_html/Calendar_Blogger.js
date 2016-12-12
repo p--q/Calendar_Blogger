@@ -111,7 +111,7 @@ var Calendar_Blogger = Calendar_Blogger || function() {
         vars.elem.textContent = null;  // 追加する対象の要素の子ノードを消去する。
         vars.elem.appendChild(clNode);  // 追加する対象の要素の子ノードにカレンダーのノードを追加する。
     }
-    function tooltipOn(e) {  // マウスが要素に乗ったとき。
+    function tooltipOn(e) {  // マウスが要素に乗ったときのイベントバブリングを受け取る関数。
         var target = e.target;
         if (target.className=="nontooltip") {  // ツールチップを持っていないノードのとき
             if (vars.tt){  // ツールチップを表示させているノードがある時
