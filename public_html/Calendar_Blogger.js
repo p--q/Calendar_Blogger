@@ -35,7 +35,7 @@ var Calendar_Blogger = Calendar_Blogger || function() {
         posts: [],  // 投稿のフィードデータの配列。
         poru: "published",  // publishedかupdated。
         elem: null,  // 置換するdiv要素。
-        flg: true  // ツールチップ表示のフラグ。
+        tt: null // ツールチップを表示させているノード。
     };
     function createVars(dt) {
         vars.y = dt.getFullYear();
@@ -93,6 +93,7 @@ var Calendar_Blogger = Calendar_Blogger || function() {
                 Node.appendChild(sNode);
             } else {
                 var Node = dNode.cloneNode(true); 
+                Node.className = "nontooltip";
                 Node.textContent = i;  // 日付を取得。textContentで代入すると子ノードは消えてしまう。
             } 
             clNode.appendChild(Node);
@@ -106,35 +107,47 @@ var Calendar_Blogger = Calendar_Blogger || function() {
         } 
         clNode.onmouseover = tooltipOn;
         clNode.onmouseout = tooltipOff;
-        clNode.onclick = tooltip;
+        clNode.style.padding = "3px";  // カレンダーの外にでるときにclNodeを発火させるため。1pxだと発火しないときがある。
+        vars.elem.textContent = null;
         vars.elem.appendChild(clNode);
     }
-    function tooltip(e) {
-        e=e||event; // IE sucks
-        var target = e.target||e.srcElement;  // and sucks again // target is the element that has been clicked
-        if (target && target.className=="tooltip") {
-            vars.flg = (vars.flg)?false:true;
-            target.lastChild.style.visibility = (target.lastChild.style.visibility == "hidden")?"visible":"hidden";
-            return false; // stop event from bubbling elsewhere
-        }   
-    }
     function tooltipOn(e) {
-        e=e||event; // IE sucks
-        var target = e.target||e.srcElement;  // and sucks again // target is the element that has been clicked
-        if (target && target.className=="tooltip") {
-            target.lastChild.style.visibility = "visible";
-            return false; // stop event from bubbling elsewhere
-        }        
-    }
-    function tooltipOff(e) {
-        e=e||event; // IE sucks
-        var target = e.target||e.srcElement;  // and sucks again // target is the element that has been clicked
-        if (target && target.className=="tooltip") {
-            if (vars.flg){
-                target.lastChild.style.visibility = "hidden";
+        var target = e.target;
+        if (target.className=="nontooltip") {  // ツールチップを持っていないノードのとき
+            if (vars.tt){  // ツールチップを表示させているノードがある時
+                vars.tt.lastChild.style.visibility = "hidden";  // ツールチップ表示を消す。
+                vars.tt = null;  // ツールチップ表示ノードの取得を取り消す。
+            } 
+            return;
+        }
+        if (target.className=="tooltip") {  // ツールチップを持っているノードのとき
+            if (target!==vars.tt) {  // ツールチップ表示ノードと同一でないとき
+                if (vars.tt){
+                    vars.tt.lastChild.style.visibility = "hidden";  // 現在のツールチップ表示を消す。
+                }
+                vars.tt = target;  // ツールチップ表示ノードを再取得。
+                vars.tt.lastChild.style.visibility = "visible";  // ツールチップを表示させる。   
             }
-            return false; // stop event from bubbling elsewhere
-        }             
+        } 
+        
+    } 
+    function tooltipOff(e) {
+        var target = e.target;  
+        if (target.className=="tooltip") {  // ツールチップを持っているノードのとき
+            if (vars.tt){  // ツールチップが表示されているとき
+                if(target!==vars.tt){  // ツールチップ表示ノードと同一でないとき
+                    vars.tt.lastChild.style.visibility = "hidden"; // ツールチップ表示を消す。
+                    vars.tt = null;  // ツールチップ表示ノードの取得を取り消す。
+                }                  
+            } 
+            return;
+        } 
+        if (target === e.currentTarget) {  // イベントが割り当てられたオブジェクトでイベントが発生した場合
+            if (vars.tt){  // ツールチップが表示されているとき
+                vars.tt.lastChild.style.visibility = "hidden"; // ツールチップ表示を消す。
+                vars.tt = null;  // ツールチップ表示ノードの取得を取り消す。
+            }
+        } 
     }
     function writeScript(url) {  // スクリプト注入。
         var ws = createElem('script');
