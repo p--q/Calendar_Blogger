@@ -112,17 +112,17 @@ var Calendar_Blogger = Calendar_Blogger || function() {
         vars.elem.appendChild(clNode);  // 追加する対象の要素の子ノードにカレンダーのノードを追加する。
     }
     function tooltipOn(e) {  // マウスが要素に乗ったときのイベントバブリングを受け取る関数。
-        var target = e.target;
+        var target = e.target;  // イベントを発生したオブジェクト。
         if (target.className=="nontooltip") {  // ツールチップを持っていないノードのとき
             if (vars.tt){  // ツールチップを表示させているノードがある時
                 vars.tt.lastChild.style.visibility = "hidden";  // ツールチップ表示を消す。
                 vars.tt = null;  // ツールチップ表示ノードの取得を取り消す。
             } 
-            return;
+            return;  // ここで終わる。
         }
         if (target.className=="tooltip") {  // ツールチップを持っているノードのとき
             if (target!==vars.tt) {  // ツールチップ表示ノードと同一でないとき
-                if (vars.tt){
+                if (vars.tt){  // 現在ツールチップが表示されているとき
                     vars.tt.lastChild.style.visibility = "hidden";  // 現在のツールチップ表示を消す。
                 }
                 vars.tt = target;  // ツールチップ表示ノードを再取得。
@@ -131,8 +131,8 @@ var Calendar_Blogger = Calendar_Blogger || function() {
         } 
         
     } 
-    function tooltipOff(e) {
-        var target = e.target;  
+    function tooltipOff(e) {  // マウスが要素からでたときのイベントバブリングを受け取る関数。
+        var target = e.target;  // イベントを発生したオブジェクト。 
         if (target.className=="tooltip") {  // ツールチップを持っているノードのとき
             if (vars.tt){  // ツールチップが表示されているとき
                 if(target!==vars.tt){  // ツールチップ表示ノードと同一でないとき
@@ -140,7 +140,7 @@ var Calendar_Blogger = Calendar_Blogger || function() {
                     vars.tt = null;  // ツールチップ表示ノードの取得を取り消す。
                 }                  
             } 
-            return;
+            return;  // ここで終わる。
         } 
         if (target === e.currentTarget) {  // イベントが割り当てられたオブジェクトでイベントが発生した場合
             if (vars.tt){  // ツールチップが表示されているとき
@@ -168,5 +168,5 @@ var Calendar_Blogger = Calendar_Blogger || function() {
     }
     return cl;  // グローバルスコープにオブジェクトを出す。
 }();
-Calendar_Blogger.all("calendar_blogger");
+Calendar_Blogger.all("calendar_blogger");  // idがcalendar_bloggerの要素にカレンダーを表示させる。
 
