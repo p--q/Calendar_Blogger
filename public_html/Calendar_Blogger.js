@@ -36,7 +36,6 @@ var Calendar_Blogger = Calendar_Blogger || function() {
         poru: "published",  // publishedかupdatedが入る。
         elem: null,  // 置換するdiv要素。
         tt: null, // ツールチップを表示させているノード。
-//        flg: true  // ツールチップ表示を消すフラグ。
         timer: null,  // timeoutID
         delay: 30  // タイムアウトするミリ秒。
     };
@@ -59,6 +58,7 @@ var Calendar_Blogger = Calendar_Blogger || function() {
         var clNode = createElem("div");  // カレンダーのdiv要素を生成。
         clNode.style.display = "flex";  // flexコンテナにする。
         clNode.style.flexWrap = "wrap";  // flexコンテナの要素を折り返す。
+        clNode.style.padding = "2px";  // flexコンテナからでるときにイベント発火させるため
         var dNode = createElem("div");  // flexアイテムになるdiv要素を生成。
         dNode.style.flexBasis = "14%";  // flexアイテムの最低幅を1/7弱にする。
         dNode.style.flexGrow = "1";  // flexコンテナの余剰pxを均等に分配する。
@@ -131,6 +131,10 @@ var Calendar_Blogger = Calendar_Blogger || function() {
             } 
         } else if (target.tagName == "A") {  // ツールチップ内のaタグに入ったとき
             window.clearTimeout(vars.timer);  // window.setTimeout() によって設定された遅延を解除する。
+        } else if (target === e.currentTarget) {  // flexコンテナでイベントが発生したとき
+            if (vars.tt){  // ツールチップを表示させているノードがある時
+                offTooltip();
+            }             
         }
     } 
     function offMouse(e) {  // マウスが要素からでたときのイベントバブリングを受け取る関数。
