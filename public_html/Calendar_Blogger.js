@@ -35,7 +35,10 @@ var Calendar_Blogger = Calendar_Blogger || function() {
         posts: [],  // 投稿のフィードデータを収納する配列。
         poru: "published",  // publishedかupdatedが入る。
         elem: null,  // 置換するdiv要素。
-        tt: null // ツールチップを表示させているノード。
+        tt: null, // ツールチップを表示させているノード。
+//        flg: true  // ツールチップ表示を消すフラグ。
+        timer: null,  // timeoutID
+        delay: 30  // タイムアウトするミリ秒。
     };
     function createVars(dt) {  // 日付オブジェクトからカレンダーのデータを作成。
         vars.y = dt.getFullYear();  // 表示カレンダーの年を取得。
@@ -61,7 +64,8 @@ var Calendar_Blogger = Calendar_Blogger || function() {
         dNode.style.flexGrow = "1";  // flexコンテナの余剰pxを均等に分配する。
         dNode.style.textAlign = "center";  // flexアイテムの内容を中央寄せにする。
         for(var i = 0; i < day; i++) { // 1日までの空白となるflexアイテムを開始曜日分まで取得。
-            var eNode = dNode.cloneNode(true);  // flexアイテムを複製。     
+            var eNode = dNode.cloneNode(true);  // flexアイテムを複製。
+            clNode.className = "nontooltip";  // 複製したflexアイテムのクラス名を設定。
             clNode.appendChild(eNode);  // flexコンテナに追加。
         }
         var daNode = dNode.cloneNode(true); // 投稿のある日となるflexアイテムを複製。  
@@ -102,24 +106,17 @@ var Calendar_Blogger = Calendar_Blogger || function() {
         if (s > 0) {  // 7で割り切れない時。
             for(var i = 0; i < 7-s; i++) { // 末日以降の空白を取得。
                 var eNode = dNode.cloneNode(true); // 末日以降のflexアイテムを複製。  
+                eNode.className = "nontooltip";  // 複製したflexアイテムのクラス名を設定。
                 clNode.appendChild(eNode);  // flexコンテナに追加。
             }        
         } 
-        clNode.onmouseover = tooltipOn;  // カレンダーのdiv要素でイベントバブリングを受け取る。マウスが要素に乗ったとき。
-        clNode.onmouseout = tooltipOff;  // カレンダーのdiv要素でイベントバブリングを受け取る。要素に乗ったマウスが要素から下りたとき。
-        clNode.style.padding = "3px";  // カレンダーの外にでるときにclNodeを発火させるため。1pxだと発火しないときがある。
+        clNode.addEventListener( 'mouseover', onMouse, false );  // カレンダーのdiv要素でイベントバブリングを受け取る。マウスが要素に乗ったとき。
+        clNode.addEventListener( 'mouseout', offMouse, false );  // カレンダーのdiv要素でイベントバブリングを受け取る。要素に乗ったマウスが要素から下りたとき。
         vars.elem.textContent = null;  // 追加する対象の要素の子ノードを消去する。
         vars.elem.appendChild(clNode);  // 追加する対象の要素の子ノードにカレンダーのノードを追加する。
     }
-    function tooltipOn(e) {  // マウスが要素に乗ったときのイベントバブリングを受け取る関数。
+    function onMouse(e) {  // マウスが要素に乗ったときのイベントバブリングを受け取る関数。
         var target = e.target;  // イベントを発生したオブジェクト。
-        if (target.className=="nontooltip") {  // ツールチップを持っていないノードのとき
-            if (vars.tt){  // ツールチップを表示させているノードがある時
-                vars.tt.lastChild.style.visibility = "hidden";  // ツールチップ表示を消す。
-                vars.tt = null;  // ツールチップ表示ノードの取得を取り消す。
-            } 
-            return;  // ここで終わる。
-        }
         if (target.className=="tooltip") {  // ツールチップを持っているノードのとき
             if (target!==vars.tt) {  // ツールチップ表示ノードと同一でないとき
                 if (vars.tt){  // 現在ツールチップが表示されているとき
@@ -128,26 +125,25 @@ var Calendar_Blogger = Calendar_Blogger || function() {
                 vars.tt = target;  // ツールチップ表示ノードを再取得。
                 vars.tt.lastChild.style.visibility = "visible";  // ツールチップを表示させる。   
             }
-        } 
-        
-    } 
-    function tooltipOff(e) {  // マウスが要素からでたときのイベントバブリングを受け取る関数。
-        var target = e.target;  // イベントを発生したオブジェクト。 
-        if (target.className=="tooltip") {  // ツールチップを持っているノードのとき
-            if (vars.tt){  // ツールチップが表示されているとき
-                if(target!==vars.tt){  // ツールチップ表示ノードと同一でないとき
-                    vars.tt.lastChild.style.visibility = "hidden"; // ツールチップ表示を消す。
-                    vars.tt = null;  // ツールチップ表示ノードの取得を取り消す。
-                }                  
+        } else if (target.className=="nontooltip") {  // ツールチップを持っていないノードのとき
+            if (vars.tt){  // ツールチップを表示させているノードがある時
+                offTooltip();
             } 
-            return;  // ここで終わる。
-        } 
-        if (target === e.currentTarget) {  // イベントが割り当てられたオブジェクトでイベントが発生した場合
+        } else if (target.tagName == "A") {  // ツールチップ内のaタグに入ったとき
+            window.clearTimeout(vars.timer);  // window.setTimeout() によって設定された遅延を解除する。
+        }
+    } 
+    function offMouse(e) {  // マウスが要素からでたときのイベントバブリングを受け取る関数。
+        var target = e.target;  // イベントを発生したオブジェクト。 
+        if (target.tagName=="SPAN") {  // ツールチップのとき。ただしその中のaタグに入った時も発火する。
             if (vars.tt){  // ツールチップが表示されているとき
-                vars.tt.lastChild.style.visibility = "hidden"; // ツールチップ表示を消す。
-                vars.tt = null;  // ツールチップ表示ノードの取得を取り消す。
-            }
-        } 
+                vars.timer = window.setTimeout(offTooltip, vars.delay);  // ツールチップ表示を消すのをvars.delayミリ秒遅延させ、そのtimeoutIDを取得する。
+            }            
+        }
+    }
+    function offTooltip(){  // ツールチップ表示を消す関数。
+        vars.tt.lastChild.style.visibility = "hidden"; // ツールチップ表示を消す。
+        vars.tt = null;  // ツールチップ表示ノードの取得を取り消す。  
     }
     function writeScript(url) {  // スクリプト注入。
         var ws = createElem('script');
