@@ -110,6 +110,7 @@ var Calendar_Blogger = Calendar_Blogger || function() {
                 clNode.appendChild(eNode);  // flexコンテナに追加。
             }        
         } 
+        clNode.addEventListener( 'touchstart', touchStart, false );  // タップしたときのイベントハンドラ。mouseoverより先に実行必要。
         clNode.addEventListener( 'mouseover', onMouse, false );  // カレンダーのdiv要素でイベントバブリングを受け取る。マウスが要素に乗ったとき。
         clNode.addEventListener( 'mouseout', offMouse, false );  // カレンダーのdiv要素でイベントバブリングを受け取る。要素に乗ったマウスが要素から下りたとき。
         vars.elem.textContent = null;  // 追加する対象の要素の子ノードを消去する。
@@ -137,6 +138,17 @@ var Calendar_Blogger = Calendar_Blogger || function() {
             }             
         }
     } 
+    function touchStart(e) {
+        var target = e.target;  // イベントを発生したオブジェクト。 
+        if (target.className=="tooltip") {  // ツールチップを持っているノードのとき
+            if (vars.tt){  // 現在ツールチップが表示されているとき
+                vars.tt.lastChild.style.visibility = "hidden";  // 現在のツールチップ表示を消す。
+            }
+            vars.tt = target;  // ツールチップ表示ノードを再取得。
+            vars.tt.lastChild.style.visibility = "visible";  // ツールチップを表示させる。  
+            window.setTimeout(offTooltip, 5*1000);  // 5秒後に表示を消す。
+        }
+    }
     function offMouse(e) {  // マウスが要素からでたときのイベントバブリングを受け取る関数。
         var target = e.target;  // イベントを発生したオブジェクト。 
         if (target.tagName=="SPAN") {  // ツールチップのとき。ただしその中のaタグに入った時も発火する。
