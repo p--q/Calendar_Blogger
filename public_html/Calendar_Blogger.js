@@ -34,10 +34,7 @@ var Calendar_Blogger = Calendar_Blogger || function() {
         max: 150,  // Bloggerのフィードで取得できる最大投稿数を設定。
         posts: [],  // 投稿のフィードデータを収納する配列。
         poru: "published",  // publishedかupdatedが入る。
-        elem: null,  // 置換するdiv要素。
-        tt: null, // ツールチップを表示させているノード。
-        timer: null,  // timeoutID
-        delay: 30  // タイムアウトするミリ秒。
+        elem: null  // 置換するdiv要素。
     };
     function createVars(dt) {  // 日付オブジェクトからカレンダーのデータを作成。
         vars.y = dt.getFullYear();  // 表示カレンダーの年を取得。
@@ -64,7 +61,6 @@ var Calendar_Blogger = Calendar_Blogger || function() {
         var clNode = createElem("div");  // カレンダーのdiv要素を生成。
         clNode.style.display = "flex";  // flexコンテナにする。
         clNode.style.flexWrap = "wrap";  // flexコンテナの要素を折り返す。
-//        clNode.style.padding = "2px";  // flexコンテナからでるときにイベント発火させるため
         
         
         var dNode = createElem("div");  // flexアイテムになるdiv要素を生成。
@@ -130,50 +126,67 @@ var Calendar_Blogger = Calendar_Blogger || function() {
         } 
         
         
-        clNode.addEventListener( 'touchstart', touchStart, false );  // タップしたときのイベントハンドラ。mouseoverより先に実行必要。
-        clNode.addEventListener( 'mouseover', onMouse, false );  // カレンダーのdiv要素でイベントバブリングを受け取る。マウスが要素に乗ったとき。
-        clNode.addEventListener( 'mouseout', offMouse, false );  // カレンダーのdiv要素でイベントバブリングを受け取る。要素に乗ったマウスが要素から下りたとき。
+        clNode.addEventListener( 'touchstart', eh.touchStart, false );  // タップしたときのイベントハンドラ。mouseoverより先に実行必要。
+        clNode.addEventListener( 'mouseover', eh.onMouse, false );  // カレンダーのdiv要素でイベントバブリングを受け取る。マウスが要素に乗ったとき。
+        clNode.addEventListener( 'mouseout', eh.offMouse, false );  // カレンダーのdiv要素でイベントバブリングを受け取る。要素に乗ったマウスが要素から下りたとき。
         vars.elem.textContent = null;  // 追加する対象の要素の子ノードを消去する。
         vars.elem.appendChild(clNode);  // 追加する対象の要素の子ノードにカレンダーのノードを追加する。
     }
-    function onMouse(e) {  // マウスが要素に乗ったときのイベントを受け取る関数。
-        var target = e.target;  // イベントを発生したオブジェクト。
-        offTimer();  // ツールチップを消すタイマーをリセットする。タイマーでツールチップ表示を消すのはカレンダー外の要素に出た時のみ。
-        if (target.className=="tooltip") {  // ツールチップを持っている日のとき
-            offTooltip();  // 現在のツールチップ表示を消す。
-            vars.tt = target;  // ツールチップ表示ノードを再取得。
-            vars.tt.lastChild.style.visibility = "visible";  // ツールチップを表示させる。   
-        } else if (target.className=="nontooltip") {  // ツールチップを持っていない日のとき
-            offTooltip();  // 現在のツールチップ表示を消す。
-        }
-    } 
-    function touchStart(e) {  // 要素をタップしたときのイベントを受け取る関数。
-        var target = e.target;  // イベントを発生したオブジェクト。 
-        if (target.className=="tooltip") {  // ツールチップを持っているノードのとき
-            offTooltip();  // ツールチップ表示を消す
-            vars.tt = target;  // ツールチップ表示ノードを再取得。
-            vars.tt.lastChild.style.visibility = "visible";  // ツールチップを表示させる。  
-            window.setTimeout(offTooltip, 5*1000);  // 5秒後に表示を消す。
-        }
-    }
-    function offMouse(e) {  // マウスが要素から出たときのイベントを受け取る関数。
-        var target = e.target;  // イベントを発生したオブジェクト。
-        if (target.className=="tooltip" || target.tagName=="SPAN") {  // ツールチップを持っているノードからツールチップに入らずに出るとき、またはツールチップから出るとき。ただしその中のaタグに入った時も発火する。
-            vars.timer = window.setTimeout(offTooltip, vars.delay);  // ツールチップ表示を消すのをvars.delayミリ秒遅延させ、そのtimeoutIDを取得する。          
-        } 
-    }
-    function offTooltip(){  // ツールチップ表示を消す関数。
-        if (vars.tt) {  // ツールチップを表示している時
-            vars.tt.lastChild.style.visibility = "hidden"; // ツールチップ表示を消す。
-            vars.tt = null;  // ツールチップ表示ノードの取得を取り消す。 
-        }
-    }
-    function offTimer() {  // ツールチップを消すタイマーをリセットする。
-        if (vars.timer) {  // 遅延タイマーが設定されている時。
-            window.clearTimeout(vars.timer);  // window.setTimeout() によって設定された遅延を解除する。
-            vars.timer = null;
-        }
-    }
+    
+//    var nd = {  // HTML要素のノードを作成するオブジェクト。
+//        
+//        
+//        
+//    };
+    
+    
+    
+    
+    
+    
+    var eh = {  // イベントハンドラオブジェクト。
+        _tt: null, // ツールチップを表示させているノード。
+        _timer: null,  // timeoutID
+        _delay: 30,  // タイムアウトするミリ秒。
+        onMouse: function(e) {  // マウスが要素に乗ったときのイベントを受け取る関数。
+            var target = e.target;  // イベントを発生したオブジェクト。
+            eh._offTimer();  // ツールチップを消すタイマーをリセットする。タイマーでツールチップ表示を消すのはカレンダー外の要素に出た時のみ。
+            if (target.className=="tooltip") {  // ツールチップを持っている日のとき
+                eh._offTooltip();  // 現在のツールチップ表示を消す。
+                eh._tt = target;  // ツールチップ表示ノードを再取得。
+                eh._tt.lastChild.style.visibility = "visible";  // ツールチップを表示させる。   
+            } else if (target.className=="nontooltip") {  // ツールチップを持っていない日のとき
+                eh._offTooltip();  // 現在のツールチップ表示を消す。
+            }
+        },         
+        touchStart: function(e) {  // 要素をタップしたときのイベントを受け取る関数。
+            var target = e.target;  // イベントを発生したオブジェクト。 
+            if (target.className=="tooltip") {  // ツールチップを持っているノードのとき
+                eh._offTooltip();  // ツールチップ表示を消す
+                eh._tt = target;  // ツールチップ表示ノードを再取得。
+                eh._tt.lastChild.style.visibility = "visible";  // ツールチップを表示させる。  
+                window.setTimeout(eh._offTooltip, 5*1000);  // 5秒後に表示を消す。
+            }
+        },        
+        offMouse: function(e) {  // マウスが要素から出たときのイベントを受け取る関数。
+            var target = e.target;  // イベントを発生したオブジェクト。
+            if (target.className=="tooltip" || target.tagName=="SPAN") {  // ツールチップを持っているノードからツールチップに入らずに出るとき、またはツールチップから出るとき。ただしその中のaタグに入った時も発火する。
+                eh._timer = window.setTimeout(eh._offTooltip, eh._delay);  // ツールチップ表示を消すのをeh._delayミリ秒遅延させ、そのtimeoutIDを取得する。          
+            } 
+        },        
+        _offTooltip: function(){  // ツールチップ表示を消す関数。
+            if (eh._tt) {  // ツールチップを表示している時
+                eh._tt.lastChild.style.visibility = "hidden"; // ツールチップ表示を消す。
+                eh._tt = null;  // ツールチップ表示ノードの取得を取り消す。 
+            }
+        },
+        _offTimer: function() {  // ツールチップを消すタイマーをリセットする。
+           if (eh._timer) {  // 遅延タイマーが設定されている時。
+               window.clearTimeout(eh._timer);  // window.setTimeout() によって設定された遅延を解除する。
+               eh._timer = null;
+           }
+        }        
+    };
     function writeScript(url) {  // スクリプト注入。
         var ws = createElem('script');
         ws.type = 'text/javascript';
