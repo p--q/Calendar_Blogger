@@ -51,10 +51,10 @@ var Calendar_Blogger = Calendar_Blogger || function() {
         vars.em = new Date(vars.y, vars.m-1, 0).getDate();  // 表示カレンダーの末日を取得。
     }
     function createCalendar(dic) {  // カレンダーのHTML要素を作成。 引数はキーを日、値を投稿のURLと投稿タイトルの配列、とする辞書。
-        var flxCnode = nd.flxC();  // flexコンテナを得る。
+        var flxCNode = nd.flxC();  // flexコンテナを得る。
         var day =  new Date(vars.y, vars.m-1, 1).getDay();  // 1日の曜日を取得。日曜日は0、土曜日は6になる。
         for(var i = 0; i < day; i++) { // 1日までの空白となるflexアイテムを開始曜日分まで取得。
-            flxCnode.appendChild(nd.flxI("nontooltip"));  // クラス名nontooltipのflexアイテムをflexコンテナに追加。
+            flxCNode.appendChild(nd.flxI("nontooltip"));  // クラス名nontooltipのflexアイテムをflexコンテナに追加。
         }
         var flxINode;  // 日のflexアイテム。
         for(var i = 1; i < vars.em+1; i++) {  // 1日から末日まで。
@@ -65,19 +65,19 @@ var Calendar_Blogger = Calendar_Blogger || function() {
                 flxINode = nd.flxI("nontooltip"); // 投稿のない日となるflexアイテム。  
                 flxINode.textContent = i;  // 日をtextノードに取得。
             } 
-            flxCnode.appendChild(flxINode);  // flexコンテナに追加。
+            flxCNode.appendChild(flxINode);  // flexコンテナに追加。
         }
         var s = (day+vars.em) % 7;  // 7で割ったあまりを取得。
         if (s > 0) {  // 7で割り切れない時。
             for(var i = 0; i < 7-s; i++) { // 末日以降の空白を取得。
-                flxCnode.appendChild(nd.flxI("nontooltip"));  //  クラス名nontooltipのflexアイテムをflexコンテナに追加。
+                flxCNode.appendChild(nd.flxI("nontooltip"));  //  クラス名nontooltipのflexアイテムをflexコンテナに追加。
             }        
         } 
-        flxCnode.addEventListener( 'touchstart', eh.touchStart, false );  // タップしたときのイベントハンドラ。mouseoverより先に実行必要。
-        flxCnode.addEventListener( 'mouseover', eh.onMouse, false );  // カレンダーのdiv要素でイベントバブリングを受け取る。マウスが要素に乗ったとき。
-        flxCnode.addEventListener( 'mouseout', eh.offMouse, false );  // カレンダーのdiv要素でイベントバブリングを受け取る。要素に乗ったマウスが要素から下りたとき。
+        flxCNode.addEventListener( 'touchstart', eh.touchStart, false );  // タップしたときのイベントハンドラ。mouseoverより先に実行必要。
+        flxCNode.addEventListener( 'mouseover', eh.onMouse, false );  // カレンダーのdiv要素でイベントバブリングを受け取る。マウスが要素に乗ったとき。
+        flxCNode.addEventListener( 'mouseout', eh.offMouse, false );  // カレンダーのdiv要素でイベントバブリングを受け取る。要素に乗ったマウスが要素から下りたとき。
         vars.elem.textContent = null;  // 追加する対象の要素の子ノードを消去する。
-        vars.elem.appendChild(flxCnode);  // 追加する対象の要素の子ノードにカレンダーのノードを追加する。
+        vars.elem.appendChild(flxCNode);  // 追加する対象の要素の子ノードにカレンダーのノードを追加する。
     }
     var nd = {  // HTML要素のノードを作成するオブジェクト。
         flxC: function() {  // flexコンテナを返す。
@@ -106,11 +106,14 @@ var Calendar_Blogger = Calendar_Blogger || function() {
             var node = createElem("span");  // ツールチップとなるspan要素を生成。
             node.style.visibility = "hidden";  // ツールチップのstyleを設定。
             node.style.width = "120px";
+            node.style.bottom = "100%";
+            node.style.left = "50%";
+            node.style.marginLeft = "-60px";
             node.style.backgroundColor = "black";
             node.style.color = "#fff";
             node.style.textAlign = "center";
             node.style.padding = "5px 0";
-            node.style.borderRradius = "6px";
+            node.style.borderRadius = "6px";
             node.style.position = "absolute";
             node.style.zIndex = "1";
             return node.cloneNode(true);
